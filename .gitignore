@@ -1,0 +1,40 @@
+contacts.csv
+contacts.xlsx
+log_sent.csv
+*.png
+pic.jpeg
+
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.log
+
+# === Environment ===
+.env
+.venv/
+venv/
+env/
+*.env
+
+# === VSCode / IDEs ===
+.vscode/
+.idea/
+*.code-workspace
+
+# === System ===
+.DS_Store
+Thumbs.db
+
+# === Excel / Data Files ===
+*.xlsx
+*.csv
+contacts.xlsx
+
+# === Profile Data (שמירת סשן WhatsApp) ===
+whatsapp_profile/
+selenium/
+# === Selenium logs ===
+chromedriver.log
