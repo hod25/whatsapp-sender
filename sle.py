@@ -85,7 +85,7 @@ for i, row in enumerate(ws.iter_rows(min_row=2, values_only=False), start=2):
         ActionChains(driver).send_keys(Keys.ESCAPE).perform()
         time.sleep(0.5)
 
-        # ניקוי תיבת חיפוש
+        # חיפוש איש קשר
         search_box = WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "div[contenteditable='true'][data-tab='3']"))
         )
@@ -94,25 +94,53 @@ for i, row in enumerate(ws.iter_rows(min_row=2, values_only=False), start=2):
         search_box.send_keys(Keys.CONTROL, "a")
         search_box.send_keys(Keys.DELETE)
         search_box.send_keys(name)
+        time.sleep(1)  # זמן לטעינת תוצאות
+        search_box.send_keys(Keys.ENTER)  # בחירת התוצאה הראשונה
+        time.sleep(1)  # זמן למעבר לצ'אט
 
-        # # המתנה להופעת איש הקשר ברשימה
-        # try:
-        #     contact = WebDriverWait(driver, 5).until(
-        #         EC.presence_of_element_located((By.XPATH, f"//span[@title='{name}']"))
-        #     )
-        #     contact.click()
-        # except:
-        #     print(f"❌ איש הקשר '{name}' לא נמצא.")
-        #     status_cell.value = "Contact Not Found"
-        #     status_cell.fill = red_fill
-        #     time_cell.value = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        #     time_cell.fill = red_fill
-        #     wb.save(excel_path)
-        #     continue
+        # שלב 2: מציאת התוצאה הנכונה ולחיצה על ההורה שלה
+        try:
+            # המתנה שתופיע לפחות תוצאת חיפוש אחת
+            results = WebDriverWait(driver, 5).until(
+                EC.presence_of_all_elements_located(
+                    (By.XPATH, '//*[@id="pane-side"]/div[1]/div/div/div')
+                )
+            )
+
+            contact_found = False
+            for result in results:
+                try:
+                    # חיפוש שם איש הקשר מתוך האלמנט (לפי title)
+                    name_element = result.find_element(By.XPATH, ".//span[@title]")
+                    found_name = name_element.get_attribute("title").strip()
+                    print(f"👀 נבדק: {found_name}")
+
+                    if found_name == name.strip():
+                        ActionChains(driver).move_to_element(result).click().perform()
+                        contact_found = True
+                        print(f"✅ נמצא איש קשר תואם: {found_name}")
+                        break
+
+                except Exception as inner_e:
+                    print(f"⚠️ בעיה פנימית בתוצאה: {inner_e}")
+                    continue
+
+            if not contact_found:
+                raise Exception("לא נמצא איש קשר תואם")
+
+        except Exception as e:
+            print(f"❌ לא נמצא איש קשר בשם: {name}")
+            status_cell.value = "Contact Not Found"
+            status_cell.fill = red_fill
+            time_cell.value = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            time_cell.fill = red_fill
+            wb.save(excel_path)
+            continue
+
 
         # לחיצה על כפתור המהדק
         attach_btn = WebDriverWait(driver, 15).until(
-            EC.element_to_be_clickable((By.XPATH, '//*[@id="main"]/footer/div[1]/div/span/div/div[1]/div/button/span'))
+            EC.element_to_be_clickable((By.XPATH, '//*[@id="main"]/footer/div[1]/div/span/div/div[1]/div/button'))
         )
         attach_btn.click()
 
