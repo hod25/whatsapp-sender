@@ -5,6 +5,7 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.action_chains import ActionChains
 from webdriver_manager.chrome import ChromeDriverManager
 import pandas as pd
 from openpyxl import load_workbook
@@ -12,7 +13,6 @@ from openpyxl.styles import PatternFill
 from datetime import datetime
 import time
 import os
-from selenium.webdriver.common.action_chains import ActionChains
 
 
 # === CONFIGURATION ===
