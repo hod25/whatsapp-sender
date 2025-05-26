@@ -14,7 +14,6 @@ from datetime import datetime
 import time
 import os
 
-
 # === CONFIGURATION ===
 excel_path = "contacts.xlsx"
 image_path = "C:\\pic.jpeg"
