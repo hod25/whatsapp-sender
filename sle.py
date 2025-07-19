@@ -15,19 +15,19 @@ import time
 import os
 
 # === CONFIGURATION ===
-excel_path = "contacts.xlsx"
+excel_path = "contacts - Copy.xlsx"
 image_path = "C:\\pic.jpeg"
-profile_path = os.path.join(os.getcwd(), "whatsapp_profile")  # לשמירת סשן
+profile_path = os.path.join(os.getcwd(), "whatsapp_profile")  # to persist session
 green_fill = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="solid")
 red_fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
 
 # === VALIDATE FILES EXIST ===
 if not os.path.exists(excel_path):
-    print(f"❌ הקובץ '{excel_path}' לא נמצא.")
+    print(f"❌ File '{excel_path}' not found.")
     exit()
 
 if not os.path.exists(image_path):
-    print(f"❌ קובץ התמונה '{image_path}' לא קיים.")
+    print(f"❌ Image file '{image_path}' not found.")
     exit()
 
 # === LOAD WORKBOOK ===
@@ -35,7 +35,7 @@ wb = load_workbook(excel_path)
 ws = wb.active
 
 # === PROMPT: RESET STATUS? ===
-reset_choice = input("🔄 האם לאפס סטטוסים קודמים (y/n)? ").strip().lower()
+reset_choice = input("🔄 Reset previous statuses (y/n)? ").strip().lower()
 if reset_choice == "y":
     for i, row in enumerate(ws.iter_rows(min_row=2), start=2):
         ws.cell(row=i, column=2).value = ""
@@ -55,14 +55,12 @@ driver = webdriver.Chrome(
 )
 
 driver.get("https://web.whatsapp.com")
-print("📱 אם זו הפעם הראשונה – סרוק את קוד ה-QR, אחרת ממשיך אוטומטית...")
+print("📱 If this is your first time – scan the QR code, otherwise it will continue automatically...")
 WebDriverWait(driver, 90).until(
     EC.presence_of_element_located((By.CSS_SELECTOR, "div[contenteditable='true'][data-tab='3']"))
 )
 
-# ... (ייבוא ספריות והגדרות כמו בקוד שלך - אין שינוי)
-
-start_time = time.time()  # מדידת זמן כולל
+start_time = time.time()  # Timer for total runtime
 
 # === LOAD CONTACTS ===
 df = pd.read_excel(excel_path)
@@ -75,16 +73,16 @@ for i, row in enumerate(ws.iter_rows(min_row=2, values_only=False), start=2):
     time_cell = ws.cell(row=i, column=3)
 
     if status_cell.value:
-        print(f"⏭️ מדלג על {name} – כבר טופל.")
+        print(f"⏭️ Skipping {name} – already processed.")
         continue
 
-    print(f"\n📨 שולח אל: {name}")
+    print(f"\n📨 Sending to: {name}")
     try:
-        # יציאה מצ'אט קודם
+        # Exit previous chat
         ActionChains(driver).send_keys(Keys.ESCAPE).perform()
         time.sleep(0.5)
 
-        # חיפוש איש קשר
+        # Search contact
         search_box = WebDriverWait(driver, 30).until(
             EC.presence_of_element_located((By.CSS_SELECTOR, "div[contenteditable='true'][data-tab='3']"))
         )
@@ -93,13 +91,12 @@ for i, row in enumerate(ws.iter_rows(min_row=2, values_only=False), start=2):
         search_box.send_keys(Keys.CONTROL, "a")
         search_box.send_keys(Keys.DELETE)
         search_box.send_keys(name)
-        time.sleep(1)  # זמן לטעינת תוצאות
-        search_box.send_keys(Keys.ENTER)  # בחירת התוצאה הראשונה
-        time.sleep(1)  # זמן למעבר לצ'אט
+        time.sleep(1)  # Time for results to load
+        search_box.send_keys(Keys.ENTER)  # Select the first result
+        time.sleep(1)  # Wait for chat to open
 
-        # שלב 2: מציאת התוצאה הנכונה ולחיצה על ההורה שלה
+        # Verify correct contact was selected
         try:
-            # המתנה שתופיע לפחות תוצאת חיפוש אחת
             results = WebDriverWait(driver, 5).until(
                 EC.presence_of_all_elements_located(
                     (By.XPATH, '//*[@id="pane-side"]/div[1]/div/div/div')
@@ -109,26 +106,25 @@ for i, row in enumerate(ws.iter_rows(min_row=2, values_only=False), start=2):
             contact_found = False
             for result in results:
                 try:
-                    # חיפוש שם איש הקשר מתוך האלמנט (לפי title)
                     name_element = result.find_element(By.XPATH, ".//span[@title]")
                     found_name = name_element.get_attribute("title").strip()
-                    print(f"👀 נבדק: {found_name}")
+                    print(f"👀 Checking: {found_name}")
 
                     if found_name == name.strip():
                         ActionChains(driver).move_to_element(result).click().perform()
                         contact_found = True
-                        print(f"✅ נמצא איש קשר תואם: {found_name}")
+                        print(f"✅ Matching contact found: {found_name}")
                         break
 
                 except Exception as inner_e:
-                    print(f"⚠️ בעיה פנימית בתוצאה: {inner_e}")
+                    print(f"⚠️ Error within result: {inner_e}")
                     continue
 
             if not contact_found:
-                raise Exception("לא נמצא איש קשר תואם")
+                raise Exception("No matching contact found")
 
         except Exception as e:
-            print(f"❌ לא נמצא איש קשר בשם: {name}")
+            print(f"❌ No contact found named: {name}")
             status_cell.value = "Contact Not Found"
             status_cell.fill = red_fill
             time_cell.value = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -137,35 +133,35 @@ for i, row in enumerate(ws.iter_rows(min_row=2, values_only=False), start=2):
             continue
 
 
-        # לחיצה על כפתור המהדק
+        # Click attach button (paperclip icon)
         attach_btn = WebDriverWait(driver, 15).until(
-            EC.element_to_be_clickable((By.XPATH, '//*[@id="main"]/footer/div[1]/div/span/div/div[1]/div/button'))
+            EC.element_to_be_clickable((By.XPATH, '//*[@id="main"]/footer/div[1]/div/span/div/div[2]/div/div[1]/button'))
         )
         attach_btn.click()
 
-        # שדה קובץ מדיה
+        # Upload image
         image_input = WebDriverWait(driver, 15).until(
             EC.presence_of_element_located((By.XPATH, "//input[@accept='image/*,video/mp4,video/3gpp,video/quicktime']"))
         )
         image_input.send_keys(image_path)
 
-        # שליחת תמונה
+        # Send image
         send_button = WebDriverWait(driver, 20).until(
-            EC.element_to_be_clickable((By.XPATH, "//span[@data-icon='send']"))
+            EC.element_to_be_clickable((By.XPATH, '//*[@id="app"]/div/div[3]/div/div[2]/div[2]/span/div/div/div/div[2]/div/div[2]/div[2]/div/div/span'))
         )
         send_button.click()
 
-        # עדכון סטטוס
+        # Update status
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         status_cell.value = "Successful"
         status_cell.fill = green_fill
         time_cell.value = timestamp
         time_cell.fill = green_fill
-        print(f"✅ נשלח בהצלחה אל: {name}")
+        print(f"✅ Successfully sent to: {name}")
 
     except Exception as e:
         msg = str(e)
-        print(f"⚠️ שגיאה בשליחה אל {name}: {msg}")
+        print(f"⚠️ Error sending to {name}: {msg}")
         status_cell.value = msg
         status_cell.fill = red_fill
         time_cell.value = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -179,4 +175,4 @@ wb.save(excel_path)
 
 end_time = time.time()
 elapsed = round(end_time - start_time, 2)
-print(f"\n🎉 כל ההודעות טופלו! זמן כולל: {elapsed} שניות.")
+print(f"\n🎉 All messages processed! Total time: {elapsed} seconds.")
