@@ -2,9 +2,13 @@
 
 🤖 An automated bot for sending images via WhatsApp to a contact list from an Excel file
 
+---
+
 ## Project Description
 
 This bot enables automatic sending of images to a contact list from an Excel file using Selenium and WhatsApp Web. It includes delivery status tracking and cell coloring based on success or failure.
+
+---
 
 ## Features
 
@@ -17,12 +21,16 @@ This bot enables automatic sending of images to a contact list from an Excel fil
 - 🔄 Option to reset previous statuses
 - 📱 Persistent profile usage to avoid repeated QR scanning
 
+---
+
 ## System Requirements
 
 - Python 3.7+
 - Google Chrome Browser
 - Excel file with contact list
 - Image file for sending
+
+---
 
 ## Installation
 
@@ -41,6 +49,8 @@ pip install -r requirements.txt
    - Excel file with "Name" column containing contact names
    - Image file for sending (update path in code)
 
+---
+
 ## Usage
 
 1. Update paths in `sle.py` file:
@@ -58,6 +68,8 @@ pip install -r requirements.txt
 
 4. The bot will automatically process all contacts in the list
 
+---
+
 ## Excel File Structure
 
 | Name | Status | Timestamp |
@@ -69,6 +81,8 @@ pip install -r requirements.txt
 - **Status**: Delivery status (automatically updated)
 - **Timestamp**: Send time (automatically updated)
 
+---
+
 ## Project Files
 
 - `sle.py` - Main bot file
@@ -76,6 +90,8 @@ pip install -r requirements.txt
 - `contacts - Copy.xlsx` - Sample contacts file
 - `chromedriver.exe` - Chrome driver
 - `whatsapp_profile/` - Profile directory for session persistence
+
+---
 
 ## Troubleshooting
 
@@ -89,6 +105,8 @@ pip install -r requirements.txt
 - Ensure stable internet connection
 - Don't close the browser window during operation
 
+---
+
 ## Security
 
 ⚠️ **Important Security Note**: This bot uses WhatsApp Web and not the official API. Use at your own risk.
@@ -97,9 +115,13 @@ pip install -r requirements.txt
 - Use a separate profile for the bot if possible
 - Be careful of temporary blocks from WhatsApp during intensive use
 
+---
+
 ## License
 
 MIT License - See LICENSE file for more details
+
+---
 
 ## Contributing
 
@@ -108,6 +130,8 @@ MIT License - See LICENSE file for more details
 3. Commit your changes (`git commit -m 'Add amazing feature'`)
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
+
+---
 
 ## Contact
 
