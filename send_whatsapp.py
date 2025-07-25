@@ -17,9 +17,9 @@ import os
 
 # === ARGS ===
 parser = argparse.ArgumentParser()
-parser.add_argument("--profile", required=True, help="תיקיית פרופיל כרום (user-data-dir)")
-parser.add_argument("--start", type=int, required=True, help="אינדקס התחלה")
-parser.add_argument("--end", type=int, required=True, help="אינדקס סוף")
+parser.add_argument("--profile", required=True, help="Chrome profile directory (user-data-dir)")
+parser.add_argument("--start", type=int, required=True, help="Start index")
+parser.add_argument("--end", type=int, required=True, help="End index")
 args = parser.parse_args()
 
 # === CONFIG ===
@@ -29,7 +29,7 @@ green_fill = PatternFill(start_color="C6EFCE", end_color="C6EFCE", fill_type="so
 red_fill = PatternFill(start_color="FFC7CE", end_color="FFC7CE", fill_type="solid")
 
 if not os.path.exists(excel_path) or not os.path.exists(image_path):
-    print("❌ קובץ Excel או תמונה חסר.")
+    print("❌ Excel file or image is missing.")
     exit()
 
 # === LOAD DATA ===
@@ -50,7 +50,7 @@ options.add_argument("--remote-debugging-port=9222")
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 driver.get("https://web.whatsapp.com")
 
-print("📱 סרוק QR אם נדרש...")
+print("📱 Scan QR code if required...")
 WebDriverWait(driver, 90).until(
     EC.presence_of_element_located((By.CSS_SELECTOR, "div[contenteditable='true'][data-tab='3']"))
 )
@@ -58,12 +58,12 @@ WebDriverWait(driver, 90).until(
 start_time = time.time()
 
 # === LOOP ===
-for i, name in enumerate(contacts, start=args.start+2):  # +2 עבור שורת כותרת באקסל
+for i, name in enumerate(contacts, start=args.start+2):  # +2 for Excel header row
     status_cell = ws.cell(row=i, column=2)
     time_cell = ws.cell(row=i, column=3)
 
     if status_cell.value:
-        print(f"⏭️ {name} כבר טופל.")
+        print(f"⏭️ {name} already processed.")
         continue
 
     try:
@@ -119,20 +119,20 @@ for i, name in enumerate(contacts, start=args.start+2):  # +2 עבור שורת 
         status_cell.fill = green_fill
         time_cell.value = timestamp
         time_cell.fill = green_fill
-        print(f"✅ נשלח אל: {name}")
+        print(f"✅ Sent to: {name}")
 
     except Exception as e:
         status_cell.value = str(e)
         status_cell.fill = red_fill
         time_cell.value = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         time_cell.fill = red_fill
-        print(f"❌ שגיאה עם {name}: {e}")
+        print(f"❌ Error with {name}: {e}")
 
     wb.save(excel_path)
 
-# === סיום ===
+# === END ===
 driver.quit()
 wb.save(excel_path)
 
 elapsed = round(time.time() - start_time, 2)
-print(f"🎉 סיום {args.profile} | זמן כולל: {elapsed} שניות.")
+print(f"🎉 Finished {args.profile} | Total time: {elapsed} seconds.")
